@@ -85,13 +85,6 @@ export class ApplicationsService {
     });
   }
 
-  async getApplicationsByRecruiter(recruiterId: number) {
-    return this.prisma.application.findMany({
-      where: { job: { postedById: recruiterId } },
-      include: { candidate: true, job: true },
-    });
-  }
-
   // TODO: Remove?
   async applyWithResume(data: {
     candidateId: number;

@@ -1,14 +1,14 @@
 import { Controller, Get, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApplicationsService } from '../applications/applications.service';
+import { RecruiterService } from './recruiter.service';
 
 @Controller('recruiter')
 export class RecruiterController {
-  constructor(private readonly applicationsService: ApplicationsService) {}
+  constructor(private readonly recruiterService: RecruiterService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('job-applications')
   async getApplicationsForJobs(@Request() req) {
-    return this.applicationsService.getApplicationsByRecruiter(req.user.id);
+    return this.recruiterService.getApplicationsByRecruiter(req.user.id);
   }
 }
