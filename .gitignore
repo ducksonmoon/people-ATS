@@ -52,3 +52,5 @@ build/config\.gypi
 .npmrc
 pnpm-lock.yaml
 /.history
+
+uploads/
