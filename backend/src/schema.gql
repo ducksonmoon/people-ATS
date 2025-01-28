@@ -1,0 +1,51 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: Int!
+  email: String!
+  role: Role!
+  createdAt: DateTime!
+}
+
+"""The roles available for users"""
+enum Role {
+  ADMIN
+  RECRUITER
+  CANDIDATE
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Job {
+  id: Int!
+  title: String!
+  description: String!
+  postedBy: User!
+  createdAt: DateTime!
+}
+
+type Application {
+  id: Int!
+  candidate: User!
+  job: Job!
+  status: String!
+  appliedAt: DateTime!
+}
+
+type Query {
+  getUsers: [User!]!
+  getJobs: [Job!]!
+  getApplications: [Application!]!
+}
+
+type Mutation {
+  createUser(email: String!, password: String!, role: Role!): User!
+  createJob(title: String!, description: String!, postedById: Float!): Job!
+  createApplication(candidateId: Int!, jobId: Int!, status: String): Application!
+  updateApplicationStatus(applicationId: Int!, status: String!): Application!
+}

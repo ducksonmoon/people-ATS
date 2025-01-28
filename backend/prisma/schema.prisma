@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int           @id @default(autoincrement())
+  email             String        @unique
+  password          String
+  role              Role
+  createdAt         DateTime      @default(now())
+  emailVerified     Boolean       @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  Job               Job[]
+  Application       Application[]
+}
+
+model Job {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  postedBy    User          @relation(fields: [postedById], references: [id])
+  postedById  Int
+  createdAt   DateTime      @default(now())
+  Application Application[]
+}
+
+model Application {
+  id          Int      @id @default(autoincrement())
+  candidate   User     @relation(fields: [candidateId], references: [id])
+  candidateId Int
+  job         Job      @relation(fields: [jobId], references: [id])
+  jobId       Int
+  status      String   @default("PENDING")
+  appliedAt   DateTime @default(now())
+  resumePath  String?
+}
+
+enum Role {
+  ADMIN
+  RECRUITER
+  CANDIDATE
+}
