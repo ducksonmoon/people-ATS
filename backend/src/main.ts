@@ -12,9 +12,13 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(','),
+    // TODO:
+    // origin: process.env.CORS_ORIGIN?.split(','),
+    // credentials: true,
+    origin: '*', // Allows requests from ANY frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+    allowedHeaders: '*',
+    credentials: false,
   });
 
   console.log('Application is running on: http://localhost:3000');
