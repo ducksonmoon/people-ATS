@@ -9,17 +9,13 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
 
   app.enableCors({
-    // TODO:
-    // origin: process.env.CORS_ORIGIN?.split(','),
-    // credentials: true,
-    origin: '*', // Allows requests from ANY frontend
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: '*',
-    credentials: false,
+    origin: process.env.CORS_ORIGIN?.split(','),
+    credentials: true,
   });
+
+  await app.listen(process.env.PORT ?? 3000);
 
   console.log('Application is running on: http://localhost:3000');
 }
