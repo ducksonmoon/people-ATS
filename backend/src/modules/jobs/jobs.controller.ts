@@ -1,10 +1,12 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
+import { Public } from '../auth/public.decorator';
 
 @Controller('jobs')
 export class JobsController {
   constructor(private readonly jobService: JobsService) {}
 
+  @Public()
   @Get()
   async getJobs(
     @Query('page') page: number = 1,
