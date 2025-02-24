@@ -22,7 +22,7 @@ export class ApplicationsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: process.env.UPLOAD_DIR || '/tmp/uploads',
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -47,7 +47,7 @@ export class ApplicationsController {
   @UseInterceptors(
     FileInterceptor('resume', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: process.env.UPLOAD_DIR || '/tmp/uploads',
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -89,7 +89,7 @@ export class ApplicationsController {
   @UseInterceptors(
     FileInterceptor('resume', {
       storage: diskStorage({
-        destination: './uploads/resumes',
+        destination: process.env.UPLOAD_RESUMES_DIR || '/tmp/uploads/resumes',
         filename: (req, file, callback) => {
           const uniqueName = `${Date.now()}-${Math.round(
             Math.random() * 1e9,

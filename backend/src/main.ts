@@ -3,11 +3,6 @@ import { AppModule } from './app.module';
 import { existsSync, mkdirSync } from 'fs';
 
 async function bootstrap() {
-  if (!existsSync('./uploads')) {
-    mkdirSync('./uploads');
-    console.log('Uploads directory created at ./uploads');
-  }
-
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
@@ -15,7 +10,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 
   console.log('Application is running on: http://localhost:3000');
 }
