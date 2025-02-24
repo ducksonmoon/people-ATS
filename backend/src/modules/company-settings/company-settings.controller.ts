@@ -8,13 +8,11 @@ export class CompanySettingsController {
     private readonly companySettingsService: CompanySettingsService,
   ) {}
 
-  // GET /company-settings
   @Get()
   async getSettings() {
     return this.companySettingsService.getSettings();
   }
 
-  // PATCH /company-settings
   @Patch()
   async updateSettings(@Body() updateDto: UpdateCompanySettingsDto) {
     return this.companySettingsService.updateSettings(updateDto);

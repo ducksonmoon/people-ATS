@@ -51,9 +51,13 @@ model Application {
 model CompanySettings {
   id           Int      @id @default(autoincrement())
   companyName  String
+  industry     String?  // New field
+  website      String?  // New field
+  description  String?  // New field
   logoUrl      String?
   primaryColor String?
   contactEmail String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+

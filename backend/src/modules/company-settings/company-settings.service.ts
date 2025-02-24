@@ -18,7 +18,6 @@ export class CompanySettingsService {
     return settings;
   }
 
-  // Updates the settings with the given DTO
   async updateSettings(updateDto: UpdateCompanySettingsDto) {
     const settings = await this.getSettings();
     return this.prisma.companySettings.update({
