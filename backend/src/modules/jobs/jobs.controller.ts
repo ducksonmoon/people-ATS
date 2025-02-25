@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { Public } from '../auth/public.decorator';
 
@@ -15,5 +15,12 @@ export class JobsController {
     @Query('location') location?: string,
   ) {
     return this.jobService.getJobs({ page, limit, category, location });
+  }
+
+  @Post()
+  async createJob(
+    @Body() body: { title: string; description: string; postedById: number },
+  ) {
+    return this.jobService.create(body);
   }
 }
