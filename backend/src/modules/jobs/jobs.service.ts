@@ -34,7 +34,7 @@ export class JobsService {
     category?: string;
     location?: string;
   }) {
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * Number(limit);
 
     const where: any = {};
     // TODO: Needs to be added in prisma first
@@ -44,7 +44,7 @@ export class JobsService {
     const jobs = await this.prisma.job.findMany({
       where,
       skip,
-      take: limit,
+      take: Number(limit),
       orderBy: { createdAt: 'desc' },
     });
 
