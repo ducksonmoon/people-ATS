@@ -37,15 +37,20 @@ export class JobsService {
     const skip = (page - 1) * Number(limit);
 
     const where: any = {};
-    // TODO: Needs to be added in prisma first
-    // if (category) where.category = category;
-    // if (location) where.location = location;
+
+    if (category) where.category = category;
+    if (location) where.location = location;
 
     const jobs = await this.prisma.job.findMany({
       where,
       skip,
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
+      include: {
+        postedBy: {
+          select: { id: true, name: true, email: true }, // Only return necessary fields
+        },
+      },
     });
 
     const total = await this.prisma.job.count({ where });

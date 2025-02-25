@@ -15,6 +15,7 @@ enum Role {
 
 model User {
   id                Int           @id @default(autoincrement())
+  name              String        @default("")
   email             String        @unique
   password          String
   role              Role
@@ -31,6 +32,8 @@ model Job {
   id          Int           @id @default(autoincrement())
   title       String
   description String
+  category    String?
+  location    String?
   postedBy    User          @relation(fields: [postedById], references: [id])
   postedById  Int
   createdAt   DateTime      @default(now())

@@ -30,10 +30,12 @@ export class AuthController {
   @Public()
   @Post('register')
   async register(
-    @Body() body: { email: string; password: string; role: Role },
+    @Body() body: { name: string; email: string; password: string; role: Role },
   ) {
-    if (!body.password || !body.email || !body.role) {
-      throw new BadRequestException('Email, password, and role are required');
+    if (!body.password || !body.email || !body.role || !body.name) {
+      throw new BadRequestException(
+        'Email, name, password, and role are required',
+      );
     }
 
     if (!Object.values(Role).includes(body.role)) {

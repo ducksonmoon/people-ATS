@@ -30,7 +30,12 @@ export class AuthService {
     };
   }
 
-  async register(data: { email: string; password: string; role: Role }) {
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+    role: Role;
+  }) {
     if (!data.password) {
       throw new Error('Password is required');
     }
@@ -39,6 +44,7 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
+        name: data.name,
         email: data.email,
         password: hashedPassword,
         role: data.role,
@@ -53,6 +59,7 @@ export class AuthService {
         data: {
           user: {
             id: user.id,
+            name: data.name,
             email: user.email,
             role: user.role,
           },
@@ -66,6 +73,7 @@ export class AuthService {
       data: {
         user: {
           id: user.id,
+          name: data.name,
           email: user.email,
           role: user.role,
         },
