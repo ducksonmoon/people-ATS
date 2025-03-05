@@ -9,57 +9,251 @@ datasource db {
 
 enum Role {
   ADMIN
+  HR
   RECRUITER
   CANDIDATE
+  EMPLOYEE
 }
 
 model User {
-  id                Int           @id @default(autoincrement())
-  name              String        @default("")
-  email             String        @unique
-  password          String
-  role              Role
-  createdAt         DateTime      @default(now())
-  emailVerified     Boolean       @default(false)
-  verificationToken String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  Job               Job[]
-  Application       Application[]
+  id                   Int                    @id @default(autoincrement())
+  email                String                 @unique
+  name                 String
+  password             String
+  role                 Role                   @default(CANDIDATE)
+  departmentId         Int?
+  hireDate             DateTime?
+  endDate              DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  emailVerified        Boolean                @default(false)
+  verificationToken    String?
+  resetToken           String?
+  resetTokenExpiry     DateTime?
+  department           Department?            @relation(fields: [departmentId], references: [id])
+  postedJobs           Job[]                  @relation("PostedJobs")
+  submissions          Application[]          @relation("Submissions")
+  assignedJobs         JobRecruiter[]         @relation("AssignedJobs")
+  assignedApplications ApplicationRecruiter[] @relation("AssignedApplications")
+  conductedInterviews  Interview[]            @relation("ConductedInterviews")
+  ActivityLog          ActivityLog[]
+  HiringGoalRecruiter  HiringGoalRecruiter[]
+  RefreshToken         RefreshToken[]
+}
+
+model JobCategory {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  jobs Job[]
+}
+
+model JobLocation {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  jobs Job[]
 }
 
 model Job {
-  id          Int           @id @default(autoincrement())
-  title       String
-  description String
-  category    String?
-  location    String?
-  postedBy    User          @relation(fields: [postedById], references: [id])
-  postedById  Int
-  createdAt   DateTime      @default(now())
-  Application Application[]
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String
+  status        String         @default("OPEN")
+  priority      String         @default("MEDIUM")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  filledDate    DateTime?
+  openPositions Int            @default(1)
+  postedById    Int
+  categoryId    Int?
+  locationId    Int?
+  departmentId  Int?
+  postedBy      User           @relation("PostedJobs", fields: [postedById], references: [id])
+  category      JobCategory?   @relation(fields: [categoryId], references: [id])
+  location      JobLocation?   @relation(fields: [locationId], references: [id])
+  department    Department?    @relation(fields: [departmentId], references: [id])
+  applications  Application[]
+  recruiters    JobRecruiter[]
+}
+
+model Department {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @unique
+  description          String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  employees            User[]
+  jobs                 Job[]
+  hiringGoals          HiringGoal[]
+  CompletedHiringGoal  CompletedHiringGoal[]
+  DepartmentGrowthPlan DepartmentGrowthPlan[]
+}
+
+model HiringGoal {
+  id                 Int                   @id @default(autoincrement())
+  departmentId       Int
+  department         Department            @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  targetHeadcount    Int
+  startDate          DateTime
+  endDate            DateTime
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  priority           String?               @default("medium")
+  status             String?               @default("in_progress")
+  budget             Float?
+  notes              String?
+  assignedRecruiters HiringGoalRecruiter[]
+
+  @@index([departmentId])
+}
+
+// Add a model to track completed hiring goals with achievement data
+model CompletedHiringGoal {
+  id              Int        @id @default(autoincrement())
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  targetHeadcount Int
+  actualHeadcount Int
+  startDate       DateTime
+  endDate         DateTime
+  achieved        Boolean    @default(false)
+  notes           String?
+  year            String
+  completedAt     DateTime   @default(now())
+  archivedBy      Int? // User ID who archived this goal
+
+  @@index([departmentId])
+  @@index([year])
+}
+
+model JobRecruiter {
+  id          Int      @id @default(autoincrement())
+  jobId       Int
+  recruiterId Int
+  assignedAt  DateTime @default(now())
+  job         Job      @relation(fields: [jobId], references: [id])
+  recruiter   User     @relation("AssignedJobs", fields: [recruiterId], references: [id])
+
+  @@unique([jobId, recruiterId])
 }
 
 model Application {
-  id          Int      @id @default(autoincrement())
-  candidate   User     @relation(fields: [candidateId], references: [id])
-  candidateId Int
-  job         Job      @relation(fields: [jobId], references: [id])
-  jobId       Int
-  status      String   @default("PENDING")
-  appliedAt   DateTime @default(now())
-  resumePath  String?
+  id                Int                    @id @default(autoincrement())
+  jobId             Int
+  candidateId       Int
+  status            String                 @default("PENDING")
+  resumePath        String?
+  coverLetter       String?
+  note              String?
+  nextInterviewDate DateTime?
+  source            String? // Added field to track external sources
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  job               Job                    @relation(fields: [jobId], references: [id])
+  candidate         User                   @relation("Submissions", fields: [candidateId], references: [id])
+  recruiters        ApplicationRecruiter[]
+  interviews        Interview[]
+}
+
+model ApplicationRecruiter {
+  id            Int         @id @default(autoincrement())
+  applicationId Int
+  recruiterId   Int
+  assignedAt    DateTime    @default(now())
+  application   Application @relation(fields: [applicationId], references: [id])
+  recruiter     User        @relation("AssignedApplications", fields: [recruiterId], references: [id])
+
+  @@unique([applicationId, recruiterId])
+}
+
+model Interview {
+  id            Int         @id @default(autoincrement())
+  applicationId Int
+  interviewerId Int
+  scheduledAt   DateTime
+  duration      Int         @default(60)
+  type          String      @default("INITIAL")
+  status        String      @default("SCHEDULED")
+  feedback      String?
+  rating        Int?        @default(0)
+  location      String?
+  meetingLink   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  application   Application @relation(fields: [applicationId], references: [id])
+  interviewer   User        @relation("ConductedInterviews", fields: [interviewerId], references: [id])
 }
 
 model CompanySettings {
-  id           Int      @id @default(autoincrement())
-  companyName  String
-  industry     String?
-  website      String?
-  description  String?
-  logoUrl      String?
-  primaryColor String?
-  contactEmail String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  companyName         String
+  industry            String?
+  website             String?
+  description         String?
+  logoUrl             String?
+  primaryColor        String?
+  contactEmail        String?
+  showNameInNav       Boolean  @default(true)
+  growthRate          Float    @default(0.1)
+  strategicPriorities String? // JSON array of department IDs
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// Add model to track department growth plans
+model DepartmentGrowthPlan {
+  id              Int        @id @default(autoincrement())
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  targetHeadcount Int
+  startDate       DateTime
+  endDate         DateTime
+  notes           String?
+  priority        String     @default("medium")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([departmentId])
+}
+
+// Add model to track system activities
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  action     String // e.g., CREATE_HIRING_GOAL, UPDATE_APPLICATION, etc.
+  details    String // Human-readable description of the activity
+  entityType String // e.g., HIRING_GOAL, APPLICATION, USER, etc.
+  entityIds  String // Comma-separated list of entity IDs or JSON
+  timestamp  DateTime @default(now())
+  userId     Int? // The user who performed the action (null for system actions)
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([action])
+  @@index([entityType])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+// Add model for HiringGoalRecruiter to connect recruiters to hiring goals
+model HiringGoalRecruiter {
+  id           Int        @id @default(autoincrement())
+  hiringGoalId Int
+  recruiterId  Int
+  assignedAt   DateTime   @default(now())
+  hiringGoal   HiringGoal @relation(fields: [hiringGoalId], references: [id], onDelete: Cascade)
+  recruiter    User       @relation(fields: [recruiterId], references: [id])
+
+  @@unique([hiringGoalId, recruiterId])
+  @@index([recruiterId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

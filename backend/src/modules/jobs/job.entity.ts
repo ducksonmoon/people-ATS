@@ -17,4 +17,28 @@ export class Job {
 
   @Field()
   createdAt: Date;
+
+  @Field({ nullable: true })
+  category: string;
+
+  @Field({ nullable: true })
+  location: string;
+}
+
+@ObjectType()
+export class JobCategory {
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  name: string;
+}
+
+@ObjectType()
+export class JobLocation {
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  name: string;
 }

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { CompanySettingsService } from './company-settings.service';
 import { UpdateCompanySettingsDto } from './dto/update-company-settings.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller('company-settings')
 export class CompanySettingsController {
@@ -8,6 +9,7 @@ export class CompanySettingsController {
     private readonly companySettingsService: CompanySettingsService,
   ) {}
 
+  @Public()
   @Get()
   async getSettings() {
     return this.companySettingsService.getSettings();

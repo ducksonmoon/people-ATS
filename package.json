@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@hookform/resolvers": "^4.1.2",
+    "react-hook-form": "^7.54.2",
+    "yup": "^1.6.1"
+  }
+}

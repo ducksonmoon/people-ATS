@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { Role } from '@prisma/client';
 import { User } from './user.entity';
+import { CreateUserDto } from './dto/user.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -9,7 +10,7 @@ export class UsersResolver {
 
   @Query(() => [User])
   async getUsers() {
-    return this.usersService.findAll();
+    return this.usersService.findAllUsers();
   }
 
   @Mutation(() => User)
@@ -17,7 +18,14 @@ export class UsersResolver {
     @Args('email') email: string,
     @Args('password') password: string,
     @Args('role', { type: () => Role }) role: Role,
+    @Args('name') name: string,
   ) {
-    return this.usersService.create({ email, password, role });
+    const userData: CreateUserDto = {
+      email,
+      password,
+      role,
+      name,
+    };
+    return this.usersService.createUser(userData);
   }
 }

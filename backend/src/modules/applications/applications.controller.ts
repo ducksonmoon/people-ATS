@@ -7,12 +7,14 @@ import {
   UseGuards,
   Body,
   Get,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ApplicationsService } from './applications.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/decorators/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -84,37 +86,99 @@ export class ApplicationsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Public()
   @Post('apply')
   @UseInterceptors(
     FileInterceptor('resume', {
       storage: diskStorage({
-        destination: process.env.UPLOAD_RESUMES_DIR || '/tmp/uploads/resumes',
-        filename: (req, file, callback) => {
-          const uniqueName = `${Date.now()}-${Math.round(
-            Math.random() * 1e9,
-          )}${extname(file.originalname)}`;
-          callback(null, uniqueName);
+        destination: './uploads/resumes',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (
+          file.mimetype.match(
+            /\/(pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document)$/,
+          )
+        ) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only PDF and DOCX files are allowed!'), false);
+        }
+      },
     }),
   )
-  async applyForJob(
+  async apply(
+    @Body()
+    body: {
+      jobId: string;
+      applicantId?: string;
+      name?: string;
+      email?: string;
+      phone?: string;
+      note?: string;
+      coverLetter?: string;
+    },
     @UploadedFile() resume: Express.Multer.File,
-    @Body() body: { jobId: number },
-    @Request() req,
   ) {
-    return this.applicationsService.create({
-      candidateId: req.user.id,
-      jobId: body.jobId,
-      status: 'PENDING',
-      resumePath: resume.path,
+    const { jobId, applicantId, name, email, phone, note, coverLetter } = body;
+
+    return this.applicationsService.createApplication({
+      jobId: parseInt(jobId, 10),
+      applicantId: applicantId ? parseInt(applicantId, 10) : undefined,
+      name,
+      email,
+      phone,
+      note,
+      coverLetter,
+      resumePath: resume ? resume.path : undefined,
     });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('my-applications')
   async getMyApplications(@Request() req) {
-    return this.applicationsService.getApplicationsByCandidate(req.user.id);
+    return this.applicationsService.getApplicationsByCandidate(req.user.userId);
+  }
+
+  @Public()
+  @Get('uuid/:uuid')
+  async getApplicationByUuid(@Param('uuid') uuid: string) {
+    // Note: This endpoint now accepts either a numeric ID or a legacy UUID
+    // It's maintained for backward compatibility but will convert UUIDs to IDs internally
+    return this.applicationsService.getApplicationByUuid(uuid);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('external')
+  async addExternalApplication(
+    @Body()
+    data: {
+      name: string;
+      email: string;
+      phone?: string;
+      jobId: number;
+      source: string;
+      status: string;
+      resumePath?: string;
+      coverLetter?: string;
+      note?: string;
+    },
+  ) {
+    return this.applicationsService.createApplication({
+      jobId: data.jobId,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      note: data.note,
+      coverLetter: data.coverLetter,
+      resumePath: data.resumePath,
+      status: data.status,
+      source: data.source,
+    });
   }
 }

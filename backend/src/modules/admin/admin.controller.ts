@@ -20,7 +20,7 @@ export class AdminController {
   async getAllUsers() {
     return this.prisma.user.findMany({
       include: {
-        Application: true,
+        submissions: true,
       },
     });
   }

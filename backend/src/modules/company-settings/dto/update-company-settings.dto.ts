@@ -1,4 +1,13 @@
-import { IsEmail, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsBoolean,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class UpdateCompanySettingsDto {
   @IsString()
@@ -28,4 +37,14 @@ export class UpdateCompanySettingsDto {
   @IsEmail({}, { message: 'Contact email must be a valid email address.' })
   @IsOptional()
   contactEmail?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  showNameInNav?: boolean;
+
+  @IsNumber()
+  @Min(0.01, { message: 'Growth rate must be at least 1%' })
+  @Max(1, { message: 'Growth rate must be at most 100%' })
+  @IsOptional()
+  growthRate?: number;
 }
